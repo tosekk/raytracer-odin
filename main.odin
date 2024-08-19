@@ -1,25 +1,18 @@
 package raytracer
 
 import "core:fmt"
+import "core:math"
 import "core:os"
 
 
 IMAGE_PATH : string: "images/image.ppm"
 
 
-hit_sphere :: proc(center: point3, radius: f64, r: ray) -> bool {
-    oc: vec3 = center - r.origin
-    a: f64 = vec3_dot(r.direction, r.direction)
-    b: f64 = -2.0 * vec3_dot(r.direction, oc)
-    c: f64 = vec3_dot(oc, oc) - radius * radius
-    discriminant: f64 = b * b - 4 * a * c
-    
-    return discriminant >= 0
-}
+ray_color :: proc(r: ray, world: []^hittable) -> color {
+    rec: hit_record
 
-ray_color :: proc(r: ray) -> color {
-    if hit_sphere(point3{ 0, 0, -1.0 }, 0.5, r) {
-        return color{ 1.0, 0, 0 }
+    if (hit_multi(world, r, interval{ 0, INFINITY }, &rec)) {
+        return 0.5 * (rec.normal + color{ 1, 1, 1 })
     }
 
     unit_direction: vec3 = vec3_unit_vector(r.direction)
@@ -28,6 +21,17 @@ ray_color :: proc(r: ray) -> color {
 }
 
 main :: proc() {
+    world: [dynamic]^hittable
+    defer {
+        for h in world {
+            free(h)
+        }
+        delete(world)
+    }
+
+    append(&world, new_sphere(point3{ 0, 0, -1 }, 0.5))
+    append(&world, new_sphere(point3{ 0, -100.5, -1 }, 100))
+
     aspect_ratio: f64 = 16.0 / 9.0
     image_width: int = 400
 
@@ -72,7 +76,7 @@ main :: proc() {
             ray_direction: vec3 = pixel_center - camera_center
             r: ray = { camera_center, ray_direction }
 
-            pixel_color: color = ray_color(r)
+            pixel_color: color = ray_color(r, world[:])
             write_color(image_handle, pixel_color)
         }
     }
