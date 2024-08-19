@@ -7,7 +7,21 @@ import "core:os"
 IMAGE_PATH : string: "images/image.ppm"
 
 
+hit_sphere :: proc(center: point3, radius: f64, r: ray) -> bool {
+    oc: vec3 = center - r.origin
+    a: f64 = vec3_dot(r.direction, r.direction)
+    b: f64 = -2.0 * vec3_dot(r.direction, oc)
+    c: f64 = vec3_dot(oc, oc) - radius * radius
+    discriminant: f64 = b * b - 4 * a * c
+    
+    return discriminant >= 0
+}
+
 ray_color :: proc(r: ray) -> color {
+    if hit_sphere(point3{ 0, 0, -1.0 }, 0.5, r) {
+        return color{ 1.0, 0, 0 }
+    }
+
     unit_direction: vec3 = vec3_unit_vector(r.direction)
     a: f64 = 0.5 * (unit_direction.y + 1.0)
     return (1.0 - a) * color{ 1.0, 1.0, 1.0 } + a * color{ 0.5, 0.7, 1.0 }
