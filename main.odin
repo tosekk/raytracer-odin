@@ -24,6 +24,8 @@ main :: proc() {
 
     cam.aspect_ratio = 16.0 / 9.0
     cam.image_width = 400
+    cam.samples_per_pixel = 100
+    cam.max_depth = 50
 
     image_handle, open_err := os.open(IMAGE_PATH, os.O_CREATE | os.O_RDWR)
     defer os.close(image_handle)

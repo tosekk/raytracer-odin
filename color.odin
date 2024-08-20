@@ -1,20 +1,34 @@
 package raytracer
 
 import "core:fmt"
+import "core:math"
 import "core:os"
 
 
 Color :: Vec3
 
 
+linear_to_gamma :: proc(linear_component: f64) -> f64 {
+    if linear_component > 0 {
+        return math.sqrt_f64(linear_component)
+    }
+
+    return 0
+}
+
 write_color :: proc(out: os.Handle, pixel_color: Color) {
     r: f64 = pixel_color.x
     g: f64 = pixel_color.y
     b: f64 = pixel_color.z
 
-    rbyte: int = int(255.999 * r)
-    gbyte: int = int(255.999 * g)
-    bbyte: int = int(255.999 * b)
+    r = linear_to_gamma(r)
+    g = linear_to_gamma(g)
+    b = linear_to_gamma(b)
+
+    intensity: Interval = { 0, 0.999 }
+    rbyte: int = int(255 * interval_clamp(intensity, r))
+    gbyte: int = int(255 * interval_clamp(intensity, g))
+    bbyte: int = int(255 * interval_clamp(intensity, b))
 
     color_code: string = fmt.tprintf("%d %d %d\n", rbyte, gbyte, bbyte)
 

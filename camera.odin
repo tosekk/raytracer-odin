@@ -7,11 +7,14 @@ import "core:os"
 Camera :: struct {
     aspect_ratio: f64,
     image_width: int,
+    samples_per_pixel: int,
+    max_depth: int,
     image_height: int,
     center: Point3,
     pixel00_loc: Point3,
     pixel_delta_u: Vec3,
     pixel_delta_v: Vec3,
+    pixel_samples_scale: f64,
 }
 
 
@@ -31,12 +34,12 @@ camera_render :: proc(image_handle: os.Handle, cam: ^Camera, world: []^Hittable)
         fmt.eprintf("\rTracing rays: {: 4d}/{: 4d} ({:.2f}%% done.)", j, cam.image_height, percent_progress)
 
         for i in 0..<cam.image_width {
-            pixel_center: Point3 = cam.pixel00_loc + (f64(i) * cam.pixel_delta_u) + (f64(j) * cam.pixel_delta_v)
-            ray_direction: Vec3 = pixel_center - cam.center
-            r: Ray = { cam.center, ray_direction }
-
-            pixel_color: Color = ray_color(r, world[:])
-            write_color(image_handle, pixel_color)
+            pixel_color: Color = { 0, 0, 0 }
+            for sample in 0..<cam.samples_per_pixel {
+                r: Ray = get_ray(cam, i, j)
+                pixel_color += ray_color(r, cam.max_depth, world)
+            }
+            write_color(image_handle, cam.pixel_samples_scale * pixel_color)
         }
     }
 
@@ -47,6 +50,8 @@ camera_render :: proc(image_handle: os.Handle, cam: ^Camera, world: []^Hittable)
 camera_initialize :: proc(cam: ^Camera) {
     cam.image_height = int(f64(cam.image_width) / cam.aspect_ratio)
     cam.image_height = (cam.image_height < 1) ? 1 : cam.image_height
+
+    cam.pixel_samples_scale = 1.0 / f64(cam.samples_per_pixel)
 
     focal_length: f64 = 1.0
     viewport_height: f64 = 2.0
@@ -64,14 +69,35 @@ camera_initialize :: proc(cam: ^Camera) {
 }
 
 @(private)
-ray_color :: proc(r: Ray, world: []^Hittable) -> Color {
+ray_color :: proc(r: Ray, depth: int, world: []^Hittable) -> Color {
+    if depth <= 0 {
+        return Color{ 0, 0, 0 }
+    }
+
     rec: HitRecord
 
-    if (hit_multi(world, r, Interval{ 0, INFINITY }, &rec)) {
-        return 0.5 * (rec.normal + Color{ 1, 1, 1 })
+    if (hit_multi(world, r, Interval{ 0.001, INFINITY }, &rec)) {
+        direction: Vec3 = rec.normal + vec3_random_unit_vector()
+        return 0.5 * ray_color(Ray{ rec.p, direction }, depth - 1, world)
     }
 
     unit_direction: Vec3 = vec3_unit_vector(r.direction)
     a: f64 = 0.5 * (unit_direction.y + 1.0)
     return (1.0 - a) * Color{ 1.0, 1.0, 1.0 } + a * Color{ 0.5, 0.7, 1.0 }
+}
+
+@(private)
+get_ray :: proc(cam: ^Camera, i, j: int) -> Ray {
+    offset: Vec3 = sample_square()
+    pixel_sample: Point3 = cam.pixel00_loc + ((f64(i) + offset.x) * cam.pixel_delta_u) + ((f64(j) + offset.y) * cam.pixel_delta_v)
+    
+    ray_origin: Point3 = cam.center
+    ray_direction: Vec3 = pixel_sample - ray_origin
+
+    return Ray{ ray_origin, ray_direction }
+}
+
+@(private)
+sample_square :: proc() -> Vec3 {
+    return Vec3{ random_double() - 0.5, random_double() - 0.5, 0 }
 }
