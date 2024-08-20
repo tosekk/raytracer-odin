@@ -4,10 +4,10 @@ import "core:fmt"
 import "core:os"
 
 
-color :: vec3
+Color :: Vec3
 
 
-write_color :: proc(out: os.Handle, pixel_color: color) {
+write_color :: proc(out: os.Handle, pixel_color: Color) {
     r: f64 = pixel_color.x
     g: f64 = pixel_color.y
     b: f64 = pixel_color.z

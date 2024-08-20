@@ -9,7 +9,7 @@ IMAGE_PATH : string: "images/image.ppm"
 
 
 main :: proc() {
-    world: [dynamic]^hittable
+    world: [dynamic]^Hittable
     defer {
         for h in world {
             free(h)
@@ -17,10 +17,10 @@ main :: proc() {
         delete(world)
     }
 
-    append(&world, new_sphere(point3{ 0, 0, -1 }, 0.5))
-    append(&world, new_sphere(point3{ 0, -100.5, -1 }, 100))
+    append(&world, new_sphere(Point3{ 0, 0, -1 }, 0.5))
+    append(&world, new_sphere(Point3{ 0, -100.5, -1 }, 100))
 
-    cam: camera
+    cam: Camera
 
     cam.aspect_ratio = 16.0 / 9.0
     cam.image_width = 400
