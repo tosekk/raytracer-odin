@@ -72,3 +72,11 @@ vec3_random_on_hemisphere :: proc(normal: Vec3) -> Vec3 {
 vec3_reflect :: proc(v, n: Vec3) -> Vec3 {
     return v - 2 * vec3_dot(v, n) * n
 } 
+
+vec3_refract :: proc(v, n: Vec3, etai_over_etat: f64) -> Vec3 {
+    cos_theta: f64 = min(vec3_dot(-v, n), 1.0)
+    r_out_perp: Vec3 = etai_over_etat * (v + cos_theta * n)
+    r_out_parallel: Vec3 = -math.sqrt_f64(abs(1.0 - vec3_length_squared(r_out_perp))) * n
+
+    return r_out_perp + r_out_parallel
+}

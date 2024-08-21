@@ -19,12 +19,14 @@ main :: proc() {
 
     material_ground: ^Lambertian = new_lambertian(Color{ 0.8, 0.8, 0 })
     material_center: ^Lambertian = new_lambertian(Color{ 0.1, 0.2, 0.5 })
-    material_left: ^Metal = new_metal(Color{ 0.8, 0.8, 0.8 }, 0.3)
+    material_left: ^Dielectric = new_dielectric(1.5)
+    material_bubble: ^Dielectric = new_dielectric(1.0 / 1.5)
     material_right: ^Metal = new_metal(Color{ 0.8, 0.6, 0.2 }, 1.0)
 
     append(&world, new_sphere(Point3{ 0, -100.5, -1 }, 100, material_ground))
     append(&world, new_sphere(Point3{ 0, 0, -1.2 }, 0.5, material_center))
     append(&world, new_sphere(Point3{ -1.0, 0, -1.0 }, 0.5, material_left))
+    append(&world, new_sphere(Point3{ -1.0, 0, -1.0 }, 0.4, material_bubble))
     append(&world, new_sphere(Point3{ 1.0, 0, -1.0 }, 0.5, material_right))
 
     cam: Camera
