@@ -16,6 +16,11 @@ vec3_length_squared :: proc(v: Vec3) -> f64 {
     return v.x * v.x + v.y * v.y + v.z * v.z
 }
 
+vec3_near_zero :: proc(v: Vec3) -> bool {
+    s: f64 = 1e-8
+    return abs(v.x) < s && abs(v.y) < s && abs(v.z) < s
+}  
+
 vec3_random :: proc{ vec3_random_vec, vec3_random_in_range }
 vec3_random_vec :: proc() -> Vec3 {
     return Vec3{ random_double(), random_double(), random_double() }
@@ -63,3 +68,7 @@ vec3_random_on_hemisphere :: proc(normal: Vec3) -> Vec3 {
 
     return -on_unit_sphere
 }
+
+vec3_reflect :: proc(v, n: Vec3) -> Vec3 {
+    return v - 2 * vec3_dot(v, n) * n
+} 

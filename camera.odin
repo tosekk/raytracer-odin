@@ -76,9 +76,12 @@ ray_color :: proc(r: Ray, depth: int, world: []^Hittable) -> Color {
 
     rec: HitRecord
 
-    if (hit_multi(world, r, Interval{ 0.001, INFINITY }, &rec)) {
-        direction: Vec3 = rec.normal + vec3_random_unit_vector()
-        return 0.5 * ray_color(Ray{ rec.p, direction }, depth - 1, world)
+    if (hit(world, r, Interval{ 0.001, INFINITY }, &rec)) {
+        if ok, attenuation, scattered := scatter(r, rec); ok {
+            return attenuation * ray_color(scattered, depth - 1, world)
+        }
+
+        return Color{ 0, 0, 0 }
     }
 
     unit_direction: Vec3 = vec3_unit_vector(r.direction)
