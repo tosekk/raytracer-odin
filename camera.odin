@@ -1,6 +1,7 @@
 package raytracer
 
 import "core:fmt"
+import "core:math"
 import "core:os"
 
 
@@ -9,12 +10,16 @@ Camera :: struct {
     image_width: int,
     samples_per_pixel: int,
     max_depth: int,
+    vfov: f64,
+    lookfrom: Point3,
+    lookat: Point3,
+    vup: Vec3,
     image_height: int,
     center: Point3,
     pixel00_loc: Point3,
-    pixel_delta_u: Vec3,
-    pixel_delta_v: Vec3,
+    pixel_delta_u, pixel_delta_v: Vec3,
     pixel_samples_scale: f64,
+    u, v, w: Vec3,
 }
 
 
@@ -53,18 +58,25 @@ camera_initialize :: proc(cam: ^Camera) {
 
     cam.pixel_samples_scale = 1.0 / f64(cam.samples_per_pixel)
 
-    focal_length: f64 = 1.0
-    viewport_height: f64 = 2.0
-    viewport_width: f64 = viewport_height * (f64(cam.image_width) / f64(cam.image_height))
-    cam.center = { 0, 0, 0 }
+    cam.center = cam.lookfrom
 
-    viewport_u: Vec3 = { viewport_width, 0, 0 }
-    viewport_v: Vec3 = { 0, -viewport_height, 0 }
+    focal_length: f64 = vec3_length(cam.lookfrom - cam.lookat)
+    theta: f64 = degrees_to_radians(cam.vfov)
+    h: f64 = math.tan_f64(theta / 2)
+    viewport_height: f64 = 2.0 * h * focal_length
+    viewport_width: f64 = viewport_height * (f64(cam.image_width) / f64(cam.image_height))
+
+    cam.w = vec3_unit_vector(cam.lookfrom - cam.lookat)
+    cam.u = vec3_unit_vector(vec3_cross(cam.vup, cam.w))
+    cam.v = vec3_cross(cam.w, cam.u)
+
+    viewport_u: Vec3 = viewport_width * cam.u
+    viewport_v: Vec3 = viewport_height * -cam.v
 
     cam.pixel_delta_u = viewport_u / f64(cam.image_width)
     cam.pixel_delta_v = viewport_v / f64(cam.image_height)
 
-    viewport_upper_left: Point3 = cam.center - Vec3{ 0, 0, focal_length } - viewport_u / 2 - viewport_v / 2
+    viewport_upper_left: Point3 = cam.center - (focal_length * cam.w) - viewport_u / 2 - viewport_v / 2
     cam.pixel00_loc = viewport_upper_left + 0.5 * (cam.pixel_delta_u + cam.pixel_delta_v)
 }
 
