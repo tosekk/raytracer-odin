@@ -14,12 +14,15 @@ Camera :: struct {
     lookfrom: Point3,
     lookat: Point3,
     vup: Vec3,
+    defocus_angle: f64,
+    focus_dist: f64,
     image_height: int,
     center: Point3,
     pixel00_loc: Point3,
     pixel_delta_u, pixel_delta_v: Vec3,
     pixel_samples_scale: f64,
     u, v, w: Vec3,
+    defocus_disk_u, defocus_disk_v: Vec3,
 }
 
 
@@ -60,10 +63,9 @@ camera_initialize :: proc(cam: ^Camera) {
 
     cam.center = cam.lookfrom
 
-    focal_length: f64 = vec3_length(cam.lookfrom - cam.lookat)
     theta: f64 = degrees_to_radians(cam.vfov)
     h: f64 = math.tan_f64(theta / 2)
-    viewport_height: f64 = 2.0 * h * focal_length
+    viewport_height: f64 = 2.0 * h * cam.focus_dist
     viewport_width: f64 = viewport_height * (f64(cam.image_width) / f64(cam.image_height))
 
     cam.w = vec3_unit_vector(cam.lookfrom - cam.lookat)
@@ -76,8 +78,12 @@ camera_initialize :: proc(cam: ^Camera) {
     cam.pixel_delta_u = viewport_u / f64(cam.image_width)
     cam.pixel_delta_v = viewport_v / f64(cam.image_height)
 
-    viewport_upper_left: Point3 = cam.center - (focal_length * cam.w) - viewport_u / 2 - viewport_v / 2
+    viewport_upper_left: Point3 = cam.center - (cam.focus_dist * cam.w) - viewport_u / 2 - viewport_v / 2
     cam.pixel00_loc = viewport_upper_left + 0.5 * (cam.pixel_delta_u + cam.pixel_delta_v)
+
+    defocus_radius: f64 = cam.focus_dist * math.tan_f64(degrees_to_radians(cam.defocus_angle / 2))
+    cam.defocus_disk_u = cam.u * defocus_radius
+    cam.defocus_disk_v = cam.v * defocus_radius
 }
 
 @(private)
@@ -106,7 +112,7 @@ get_ray :: proc(cam: ^Camera, i, j: int) -> Ray {
     offset: Vec3 = sample_square()
     pixel_sample: Point3 = cam.pixel00_loc + ((f64(i) + offset.x) * cam.pixel_delta_u) + ((f64(j) + offset.y) * cam.pixel_delta_v)
     
-    ray_origin: Point3 = cam.center
+    ray_origin: Point3 = cam.defocus_angle <= 0 ? cam.center : defocus_disk_sample(cam)
     ray_direction: Vec3 = pixel_sample - ray_origin
 
     return Ray{ ray_origin, ray_direction }
@@ -115,4 +121,10 @@ get_ray :: proc(cam: ^Camera, i, j: int) -> Ray {
 @(private)
 sample_square :: proc() -> Vec3 {
     return Vec3{ random_double() - 0.5, random_double() - 0.5, 0 }
+}
+
+@(private)
+defocus_disk_sample :: proc(cam: ^Camera) -> Point3 {
+    p: Vec3 = vec3_random_in_unit_disk()
+    return cam.center + (p.x * cam.defocus_disk_u) + (p.y * cam.defocus_disk_v)
 }

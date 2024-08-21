@@ -30,11 +30,11 @@ vec3_random_in_range :: proc(min, max: f64) -> Vec3 {
     return Vec3{ random_double(min, max), random_double(min, max), random_double(min, max) }
 }
 
-vec3_dot :: proc(v, u: Vec3) -> f64 {
+vec3_dot :: proc(u, v: Vec3) -> f64 {
     return u.x * v.x + u.y * v.y + u.z * v.z
 }
 
-vec3_cross :: proc(v, u: Vec3) -> Vec3 {
+vec3_cross :: proc(u, v: Vec3) -> Vec3 {
     return Vec3{
         u.y * v.z - u.z * v.y,
         u.z * v.x - u.x * v.z,
@@ -44,6 +44,15 @@ vec3_cross :: proc(v, u: Vec3) -> Vec3 {
 
 vec3_unit_vector :: proc(v: Vec3) -> Vec3 {
     return v / vec3_length(v)
+}
+
+vec3_random_in_unit_disk :: proc() -> Vec3 {
+    for {
+        p: Vec3 = { random_double(-1, 1), random_double(-1, 1), 0 }
+        if vec3_length_squared(p) < 1 {
+            return p
+        }
+    }
 }
 
 vec3_random_in_unit_sphere :: proc() -> Vec3 {
