@@ -5,7 +5,7 @@ import "core:math"
 import "core:os"
 
 
-IMAGE_PATH : string: "images/image_test.ppm"
+IMAGE_PATH : string: "images/image.ppm"
 
 
 main :: proc() {
@@ -29,7 +29,7 @@ main :: proc() {
     cam.aspect_ratio = 16.0 / 9.0
     cam.image_width = 400
     cam.samples_per_pixel = 100
-    cam.max_depth = 10
+    cam.max_depth = 50
     
     cam.vfov = 20
     cam.lookfrom = Point3{ 13, 2, 3 }
@@ -78,7 +78,8 @@ one_weekend_final_scene :: proc(world: ^[dynamic]^Hittable) {
                 if choose_mat < 0.8 {
                     albedo: Color = vec3_random() * vec3_random()
                     sphere_material = new_lambertian(albedo)
-                    append(world, new_sphere(center, 0.2, sphere_material))
+                    center2 := center + Vec3{ 0, random_double(0, 0.5), 0 }
+                    append(world, new_sphere(center, center2, 0.2, sphere_material))
                 } else if choose_mat < 0.95 {
                     albedo: Color = vec3_random(0.5, 1)
                     fuzz: f64 = random_double()

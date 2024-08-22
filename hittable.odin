@@ -19,7 +19,7 @@ hit_record_set_front_face :: proc(rec: ^HitRecord, r: Ray, outward_normal: Vec3)
     rec.normal = rec.front_face ? outward_normal : -outward_normal
 }
 
-hit :: proc(objects: []^Hittable, r: Ray, ray_t: Interval, rec: ^HitRecord) -> bool {
+hittable_hit :: proc(objects: []^Hittable, r: Ray, ray_t: Interval, rec: ^HitRecord) -> bool {
     temp_rec: HitRecord
     hit_anything: bool
     closest_so_far: f64 = ray_t.max

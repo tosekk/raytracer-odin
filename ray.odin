@@ -4,6 +4,7 @@ package raytracer
 Ray :: struct {
     origin: Point3,
     direction: Vec3,
+    time: f64,
 }
 
 

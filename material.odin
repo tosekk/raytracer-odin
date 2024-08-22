@@ -46,7 +46,7 @@ new_dielectric :: proc(refraction_index: f64) -> (dielectric: ^Dielectric) {
     return
 }
 
-scatter :: proc(r_in: Ray, rec: HitRecord) -> (ok: bool, attenuation: Color, scattered: Ray) {
+material_scatter :: proc(r_in: Ray, rec: HitRecord) -> (ok: bool, attenuation: Color, scattered: Ray) {
     switch m in rec.mat.type {
         case ^Lambertian:
             scatter_direction: Vec3 = rec.normal + vec3_random_unit_vector()
@@ -55,13 +55,13 @@ scatter :: proc(r_in: Ray, rec: HitRecord) -> (ok: bool, attenuation: Color, sca
                 scatter_direction = rec.normal
             }
 
-            scattered = Ray{ rec.p, scatter_direction }
+            scattered = Ray{ rec.p, scatter_direction, r_in.time }
             attenuation = m.albedo
             ok = true
         case ^Metal:
             reflected := vec3_reflect(r_in.direction, rec.normal)
             reflected = vec3_unit_vector(reflected) + (m.fuzz * vec3_random_unit_vector())
-            scattered = Ray{ rec.p, reflected }
+            scattered = Ray{ rec.p, reflected, r_in.time }
             attenuation = m.albedo
             ok = vec3_dot(scattered.direction, rec.normal) > 0
         case ^Dielectric:
@@ -81,7 +81,7 @@ scatter :: proc(r_in: Ray, rec: HitRecord) -> (ok: bool, attenuation: Color, sca
 
             direction = vec3_refract(unit_direction, rec.normal, ri)
 
-            scattered = Ray{ rec.p, direction }
+            scattered = Ray{ rec.p, direction, r_in.time }
             ok = true
     }
 

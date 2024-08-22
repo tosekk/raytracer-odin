@@ -44,10 +44,10 @@ camera_render :: proc(image_handle: os.Handle, cam: ^Camera, world: []^Hittable)
         for i in 0..<cam.image_width {
             pixel_color: Color = { 0, 0, 0 }
             for sample in 0..<cam.samples_per_pixel {
-                r: Ray = get_ray(cam, i, j)
-                pixel_color += ray_color(r, cam.max_depth, world)
+                r: Ray = camera_get_ray(cam, i, j)
+                pixel_color += camera_ray_color(r, cam.max_depth, world)
             }
-            write_color(image_handle, cam.pixel_samples_scale * pixel_color)
+            color_write_color(image_handle, cam.pixel_samples_scale * pixel_color)
         }
     }
 
@@ -87,16 +87,16 @@ camera_initialize :: proc(cam: ^Camera) {
 }
 
 @(private)
-ray_color :: proc(r: Ray, depth: int, world: []^Hittable) -> Color {
+camera_ray_color :: proc(r: Ray, depth: int, world: []^Hittable) -> Color {
     if depth <= 0 {
         return Color{ 0, 0, 0 }
     }
 
     rec: HitRecord
 
-    if (hit(world, r, Interval{ 0.001, INFINITY }, &rec)) {
-        if ok, attenuation, scattered := scatter(r, rec); ok {
-            return attenuation * ray_color(scattered, depth - 1, world)
+    if (hittable_hit(world, r, Interval{ 0.001, INFINITY }, &rec)) {
+        if ok, attenuation, scattered := material_scatter(r, rec); ok {
+            return attenuation * camera_ray_color(scattered, depth - 1, world)
         }
 
         return Color{ 0, 0, 0 }
@@ -108,23 +108,24 @@ ray_color :: proc(r: Ray, depth: int, world: []^Hittable) -> Color {
 }
 
 @(private)
-get_ray :: proc(cam: ^Camera, i, j: int) -> Ray {
-    offset: Vec3 = sample_square()
+camera_get_ray :: proc(cam: ^Camera, i, j: int) -> Ray {
+    offset: Vec3 = camera_sample_square()
     pixel_sample: Point3 = cam.pixel00_loc + ((f64(i) + offset.x) * cam.pixel_delta_u) + ((f64(j) + offset.y) * cam.pixel_delta_v)
     
-    ray_origin: Point3 = cam.defocus_angle <= 0 ? cam.center : defocus_disk_sample(cam)
+    ray_origin: Point3 = cam.defocus_angle <= 0 ? cam.center : camera_defocus_disk_sample(cam)
     ray_direction: Vec3 = pixel_sample - ray_origin
+    ray_time: f64 = random_double()
 
-    return Ray{ ray_origin, ray_direction }
+    return Ray{ ray_origin, ray_direction, ray_time }
 }
 
 @(private)
-sample_square :: proc() -> Vec3 {
+camera_sample_square :: proc() -> Vec3 {
     return Vec3{ random_double() - 0.5, random_double() - 0.5, 0 }
 }
 
 @(private)
-defocus_disk_sample :: proc(cam: ^Camera) -> Point3 {
+camera_defocus_disk_sample :: proc(cam: ^Camera) -> Point3 {
     p: Vec3 = vec3_random_in_unit_disk()
     return cam.center + (p.x * cam.defocus_disk_u) + (p.y * cam.defocus_disk_v)
 }
