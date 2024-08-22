@@ -5,7 +5,7 @@ import "core:math"
 import "core:os"
 
 
-IMAGE_PATH : string: "images/image.ppm"
+IMAGE_PATH : string: "images/image_next_week.ppm"
 
 
 main :: proc() {
