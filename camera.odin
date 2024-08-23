@@ -26,7 +26,7 @@ Camera :: struct {
 }
 
 
-camera_render :: proc(image_handle: os.Handle, cam: ^Camera, world: []^Hittable) {
+camera_render :: proc(image_handle: os.Handle, cam: ^Camera, world: ^HittableList) {
     camera_initialize(cam)
 
     header: string = fmt.tprintf("P3\n%d %d\n255\n", cam.image_width, cam.image_height)
@@ -87,20 +87,34 @@ camera_initialize :: proc(cam: ^Camera) {
 }
 
 @(private)
-camera_ray_color :: proc(r: Ray, depth: int, world: []^Hittable) -> Color {
+camera_ray_color :: proc(r: Ray, depth: int, world: ^HittableList) -> Color {
     if depth <= 0 {
         return Color{ 0, 0, 0 }
     }
 
     rec: HitRecord
 
-    if (hittable_hit(world, r, &Interval{ 0.001, INFINITY }, &rec)) {
-        if ok, attenuation, scattered := material_scatter(r, rec); ok {
-            return attenuation * camera_ray_color(scattered, depth - 1, world)
+    for obj in &world.objects {
+        #partial switch o in obj.type {
+            case ^Sphere:
+                if (hittable_hit(o, r, &Interval{ 0.001, INFINITY }, &rec)) {
+                    if ok, attenuation, scattered := material_scatter(r, rec); ok {
+                        return attenuation * camera_ray_color(scattered, depth - 1, world)
+                    }
+            
+                    return Color{ 0, 0, 0 }
+                }
+            case ^BVH:
+                if (bvh_hit(o, r, &Interval{ 0.001, INFINITY }, &rec)) {
+                    if ok, attenuation, scattered := material_scatter(r, rec); ok {
+                        return attenuation * camera_ray_color(scattered, depth - 1, world)
+                    }
+            
+                    return Color{ 0, 0, 0 }
+                }
         }
-
-        return Color{ 0, 0, 0 }
     }
+    
 
     unit_direction: Vec3 = vec3_unit_vector(r.direction)
     a: f64 = 0.5 * (unit_direction.y + 1.0)

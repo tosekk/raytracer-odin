@@ -21,3 +21,7 @@ random_f64 :: proc() -> f64 {
 random_f64_in_range :: proc(min, max: f64) -> f64 {
     return min + (max - min) * random_f64()
 }
+
+random_int :: proc(min, max: int) -> int {
+    return int(random_double(f64(min), f64(max + 1)))
+}

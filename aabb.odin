@@ -1,5 +1,7 @@
 package raytracer
 
+import "core:fmt"
+
 
 AABB :: struct {
     x, y, z: Interval,
@@ -29,9 +31,9 @@ new_aabb_points :: proc(a, b: Point3) -> (bbox: ^AABB) {
 
 new_aabb_bboxes :: proc(box0, box1: ^AABB) -> (bbox: ^AABB) {
     bbox = new(AABB)
-    bbox.x = new_interval(box0.x, box1.x)^
-    bbox.y = new_interval(box0.y, box1.y)^
-    bbox.z = new_interval(box0.z, box1.z)^
+    bbox.x = new_interval(box0.x, box1.x)
+    bbox.y = new_interval(box0.y, box1.y)
+    bbox.z = new_interval(box0.z, box1.z)
     return
 }
 
@@ -40,6 +42,14 @@ aabb_axis_interval :: proc(bbox: ^AABB, n: int) -> Interval {
         case 1: return bbox.y
         case 2: return bbox.z
         case: return bbox.x
+    }
+}
+
+aabb_longest_axis :: proc(bbox: ^AABB) -> int {
+    if interval_size(bbox.x) > interval_size(bbox.y) {
+        return interval_size(bbox.x) > interval_size(bbox.z) ? 0 : 2
+    } else {
+        return interval_size(bbox.y) > interval_size(bbox.z) ? 1 : 2
     }
 }
 
@@ -77,3 +87,6 @@ aabb_hit :: proc(bbox: ^AABB, r: Ray, ray_t: ^Interval) -> bool {
 
     return true
 }
+
+aabb_empty : AABB = { interval_empty, interval_empty, interval_empty }
+aabb_universe : AABB = { interval_universe, interval_universe, interval_universe }

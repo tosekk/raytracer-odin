@@ -1,13 +1,14 @@
 package raytracer
 
+import "core:fmt"
+
 
 Interval :: struct {
     min: f64,
     max: f64,
 }
 
-new_interval :: proc(a, b: Interval) -> (interval: ^Interval) {
-    interval = new(Interval)
+new_interval :: proc(a, b: Interval) -> (interval: Interval) {
     interval.min = a.min <= b.min ? a.min : b.min
     interval.max = a.max <= b.max ? a.max : b.max
     return
@@ -40,5 +41,5 @@ interval_expand :: proc(i: Interval, delta: f64) -> Interval {
     return Interval{ i.min + padding, i.max + padding }
 }
 
-empty : Interval = { INFINITY, NEGATIVE_INFINITY }
-universe : Interval = { NEGATIVE_INFINITY, INFINITY }
+interval_empty : Interval = { INFINITY, NEGATIVE_INFINITY }
+interval_universe : Interval = { NEGATIVE_INFINITY, INFINITY }

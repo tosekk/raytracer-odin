@@ -9,19 +9,23 @@ IMAGE_PATH : string: "images/image_next_week.ppm"
 
 
 main :: proc() {
-    world: HittableList
+    world := new_hittable_list()
+    world.bbox = &aabb_empty
+
     defer {
         for h in world.objects {
             free(h)
         }
-        hittable_list_clear(&world)
+        hittable_list_clear(world)
     }
 
-    switch 2 {
+    switch 1 {
         case 1:
-            three_spheres(&world)
+            three_spheres(world)
+            world = new_hittable_list(new_bvh_node(world))
         case 2:
-            one_weekend_final_scene(&world)
+            one_weekend_final_scene(world)
+            world = new_hittable_list(new_bvh_node(world))
     }
 
     cam: Camera
@@ -46,7 +50,7 @@ main :: proc() {
         fmt.panicf("Could not open image_handle at \"%s\": %v", IMAGE_PATH, open_err)
     }
 
-    camera_render(image_handle, &cam, world.objects[:]) 
+    camera_render(image_handle, &cam, world) 
 }
 
 three_spheres :: proc(world: ^HittableList) {
@@ -55,12 +59,12 @@ three_spheres :: proc(world: ^HittableList) {
     material_left: ^Dielectric = new_dielectric(1.5)
     material_bubble: ^Dielectric = new_dielectric(1.0 / 1.5)
     material_right: ^Metal = new_metal(Color{ 0.8, 0.6, 0.2 }, 1.0)
-
+    
     hittable_list_add(world, new_sphere(Point3{ 0, -100.5, -1 }, 100, material_ground))
     hittable_list_add(world, new_sphere(Point3{ 0, 0, -1.2 }, 0.5, material_center))
     hittable_list_add(world, new_sphere(Point3{ -1.0, 0, -1.0 }, 0.5, material_left))
     hittable_list_add(world, new_sphere(Point3{ -1.0, 0, -1.0 }, 0.4, material_bubble))
-    hittable_list_add(world, new_sphere(Point3{ 1.0, 0, -1.0 }, 0.5, material_right))
+    hittable_list_add(world, new_sphere(Point3{ 1.0, 0, -1.0 }, 0.5, material_right))    
 }
 
 one_weekend_final_scene :: proc(world: ^HittableList) {
