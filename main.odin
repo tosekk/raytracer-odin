@@ -9,12 +9,12 @@ IMAGE_PATH : string: "images/image_next_week.ppm"
 
 
 main :: proc() {
-    world: [dynamic]^Hittable
+    world: HittableList
     defer {
-        for h in world {
+        for h in world.objects {
             free(h)
         }
-        delete(world)
+        hittable_list_clear(&world)
     }
 
     switch 2 {
@@ -46,26 +46,26 @@ main :: proc() {
         fmt.panicf("Could not open image_handle at \"%s\": %v", IMAGE_PATH, open_err)
     }
 
-    camera_render(image_handle, &cam, world[:]) 
+    camera_render(image_handle, &cam, world.objects[:]) 
 }
 
-three_spheres :: proc(world: ^[dynamic]^Hittable) {
+three_spheres :: proc(world: ^HittableList) {
     material_ground: ^Lambertian = new_lambertian(Color{ 0.8, 0.8, 0 })
     material_center: ^Lambertian = new_lambertian(Color{ 0.1, 0.2, 0.5 })
     material_left: ^Dielectric = new_dielectric(1.5)
     material_bubble: ^Dielectric = new_dielectric(1.0 / 1.5)
     material_right: ^Metal = new_metal(Color{ 0.8, 0.6, 0.2 }, 1.0)
 
-    append(world, new_sphere(Point3{ 0, -100.5, -1 }, 100, material_ground))
-    append(world, new_sphere(Point3{ 0, 0, -1.2 }, 0.5, material_center))
-    append(world, new_sphere(Point3{ -1.0, 0, -1.0 }, 0.5, material_left))
-    append(world, new_sphere(Point3{ -1.0, 0, -1.0 }, 0.4, material_bubble))
-    append(world, new_sphere(Point3{ 1.0, 0, -1.0 }, 0.5, material_right))
+    hittable_list_add(world, new_sphere(Point3{ 0, -100.5, -1 }, 100, material_ground))
+    hittable_list_add(world, new_sphere(Point3{ 0, 0, -1.2 }, 0.5, material_center))
+    hittable_list_add(world, new_sphere(Point3{ -1.0, 0, -1.0 }, 0.5, material_left))
+    hittable_list_add(world, new_sphere(Point3{ -1.0, 0, -1.0 }, 0.4, material_bubble))
+    hittable_list_add(world, new_sphere(Point3{ 1.0, 0, -1.0 }, 0.5, material_right))
 }
 
-one_weekend_final_scene :: proc(world: ^[dynamic]^Hittable) {
+one_weekend_final_scene :: proc(world: ^HittableList) {
     ground_material: ^Lambertian = new_lambertian(Color{ 0.5, 0.5, 0.5 })
-    append(world, new_sphere(Point3{ 0, -1000, 0 }, 1000, ground_material))
+    hittable_list_add(world, new_sphere(Point3{ 0, -1000, 0 }, 1000, ground_material))
 
     for a in -11..<11 {
         for b in -11..<11 {
@@ -79,26 +79,26 @@ one_weekend_final_scene :: proc(world: ^[dynamic]^Hittable) {
                     albedo: Color = vec3_random() * vec3_random()
                     sphere_material = new_lambertian(albedo)
                     center2 := center + Vec3{ 0, random_double(0, 0.5), 0 }
-                    append(world, new_sphere(center, center2, 0.2, sphere_material))
+                    hittable_list_add(world, new_sphere(center, center2, 0.2, sphere_material))
                 } else if choose_mat < 0.95 {
                     albedo: Color = vec3_random(0.5, 1)
                     fuzz: f64 = random_double()
                     sphere_material = new_metal(albedo, fuzz)
-                    append(world, new_sphere(center, 0.2, sphere_material))
+                    hittable_list_add(world, new_sphere(center, 0.2, sphere_material))
                 } else {
                     sphere_material = new_dielectric(1.5)
-                    append(world, new_sphere(center, 0.2, sphere_material))
+                    hittable_list_add(world, new_sphere(center, 0.2, sphere_material))
                 }
             }
         }
     }
 
     material1: ^Dielectric = new_dielectric(1.5)
-    append(world, new_sphere(Point3{ 0, 1, 0 }, 1.0, material1))
+    hittable_list_add(world, new_sphere(Point3{ 0, 1, 0 }, 1.0, material1))
 
     material2: ^Lambertian = new_lambertian(Color{ 0.4, 0.2, 0.1 })
-    append(world, new_sphere(Point3{ -4, 1, 0 }, 1.0, material2))
+    hittable_list_add(world, new_sphere(Point3{ -4, 1, 0 }, 1.0, material2))
 
     material3: ^Metal = new_metal(Color{ 0.7, 0.6, 0.5 }, 0)
-    append(world, new_sphere(Point3{ 4, 1, 0 }, 1.0, material3))
+    hittable_list_add(world, new_sphere(Point3{ 4, 1, 0 }, 1.0, material3))
 }

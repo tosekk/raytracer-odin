@@ -10,6 +10,7 @@ Sphere :: struct {
     mat: Material,
     is_moving: bool,
     center_vec: Vec3,
+    bbox: ^AABB,
 }
 
 
@@ -21,6 +22,10 @@ new_stationary_sphere :: proc(center: Point3, radius: f64, mat: Material) -> (sp
     sphere.radius = radius
     sphere.mat = mat
     sphere.is_moving = false
+
+    rvec := Vec3{ radius, radius, radius }
+    sphere.bbox = new_aabb(center - rvec, center + rvec)
+
     return
 }
 
@@ -32,6 +37,12 @@ new_moving_sphere :: proc(center1, center2: Point3, radius: f64, mat: Material) 
     sphere.mat = mat
     sphere.is_moving = true
     sphere.center_vec = center2 - center1
+
+    rvec := Vec3{ radius, radius, radius }
+    box1: ^AABB = new_aabb(center1 - rvec, center1 + rvec)
+    box2: ^AABB = new_aabb(center2 - rvec, center2 + rvec)
+    sphere.bbox = new_aabb(box1, box2)
+
     return
 }
 
@@ -68,4 +79,8 @@ sphere_hit :: proc(sphere: ^Sphere, r: Ray, ray_t: Interval, rec: ^HitRecord) ->
 
 sphere_center :: proc(sphere: ^Sphere, time: f64) -> Vec3 {
     return sphere.center1 + time * sphere.center_vec
+}
+
+sphere_bounding_box :: proc(sphere: ^Sphere) -> ^AABB {
+    return sphere.bbox
 }

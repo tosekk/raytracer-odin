@@ -94,7 +94,7 @@ camera_ray_color :: proc(r: Ray, depth: int, world: []^Hittable) -> Color {
 
     rec: HitRecord
 
-    if (hittable_hit(world, r, Interval{ 0.001, INFINITY }, &rec)) {
+    if (hittable_hit(world, r, &Interval{ 0.001, INFINITY }, &rec)) {
         if ok, attenuation, scattered := material_scatter(r, rec); ok {
             return attenuation * camera_ray_color(scattered, depth - 1, world)
         }
