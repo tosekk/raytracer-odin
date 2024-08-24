@@ -51,7 +51,7 @@ new_bvh_node_array :: proc(bvh:^BVH, objects: []^Hittable, start, end: int) -> ^
     return bvh
 }
 
-bvh_hit :: proc(bvh: ^BVH, r: Ray, ray_t: ^Interval, rec: ^HitRecord) -> bool {
+bvh_hit :: proc(bvh: ^BVH, r: Ray, ray_t: ^Interval, rec: ^HitRecord) -> bool {    
     if !aabb_hit(bvh.bbox, r, ray_t) {
         return false
     }

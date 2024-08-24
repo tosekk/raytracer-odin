@@ -94,27 +94,13 @@ camera_ray_color :: proc(r: Ray, depth: int, world: ^HittableList) -> Color {
 
     rec: HitRecord
 
-    for obj in &world.objects {
-        #partial switch o in obj.type {
-            case ^Sphere:
-                if (hittable_hit(o, r, &Interval{ 0.001, INFINITY }, &rec)) {
-                    if ok, attenuation, scattered := material_scatter(r, rec); ok {
-                        return attenuation * camera_ray_color(scattered, depth - 1, world)
-                    }
-            
-                    return Color{ 0, 0, 0 }
-                }
-            case ^BVH:
-                if (bvh_hit(o, r, &Interval{ 0.001, INFINITY }, &rec)) {
-                    if ok, attenuation, scattered := material_scatter(r, rec); ok {
-                        return attenuation * camera_ray_color(scattered, depth - 1, world)
-                    }
-            
-                    return Color{ 0, 0, 0 }
-                }
+    if (hittable_hit(world.objects[:], r, &Interval{ 0.001, INFINITY }, &rec)) {
+        if ok, attenuation, scattered := material_scatter(r, rec); ok {
+            return attenuation * camera_ray_color(scattered, depth - 1, world)
         }
-    }
-    
+
+        return Color{ 0, 0, 0 }
+    }    
 
     unit_direction: Vec3 = vec3_unit_vector(r.direction)
     a: f64 = 0.5 * (unit_direction.y + 1.0)

@@ -60,11 +60,11 @@ three_spheres :: proc(world: ^HittableList) {
     material_bubble: ^Dielectric = new_dielectric(1.0 / 1.5)
     material_right: ^Metal = new_metal(Color{ 0.8, 0.6, 0.2 }, 1.0)
     
-    hittable_list_add(world, new_sphere(Point3{ 0, -100.5, -1 }, 100, material_ground))
-    hittable_list_add(world, new_sphere(Point3{ 0, 0, -1.2 }, 0.5, material_center))
-    hittable_list_add(world, new_sphere(Point3{ -1.0, 0, -1.0 }, 0.5, material_left))
-    hittable_list_add(world, new_sphere(Point3{ -1.0, 0, -1.0 }, 0.4, material_bubble))
     hittable_list_add(world, new_sphere(Point3{ 1.0, 0, -1.0 }, 0.5, material_right))    
+    hittable_list_add(world, new_sphere(Point3{ 0, 0, -1.2 }, 0.5, material_center))
+    hittable_list_add(world, new_sphere(Point3{ -1.0, 0, -1.0 }, 0.4, material_bubble))
+    hittable_list_add(world, new_sphere(Point3{ -1.0, 0, -1.0 }, 0.5, material_left))
+    hittable_list_add(world, new_sphere(Point3{ 0, -100.5, -1 }, 100, material_ground))
 }
 
 one_weekend_final_scene :: proc(world: ^HittableList) {
