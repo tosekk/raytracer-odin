@@ -100,7 +100,7 @@ camera_ray_color :: proc(r: Ray, depth: int, world: ^HittableList) -> Color {
         }
 
         return Color{ 0, 0, 0 }
-    }    
+    }
 
     unit_direction: Vec3 = vec3_unit_vector(r.direction)
     a: f64 = 0.5 * (unit_direction.y + 1.0)
@@ -111,7 +111,7 @@ camera_ray_color :: proc(r: Ray, depth: int, world: ^HittableList) -> Color {
 camera_get_ray :: proc(cam: ^Camera, i, j: int) -> Ray {
     offset: Vec3 = camera_sample_square()
     pixel_sample: Point3 = cam.pixel00_loc + ((f64(i) + offset.x) * cam.pixel_delta_u) + ((f64(j) + offset.y) * cam.pixel_delta_v)
-    
+
     ray_origin: Point3 = cam.defocus_angle <= 0 ? cam.center : camera_defocus_disk_sample(cam)
     ray_direction: Vec3 = pixel_sample - ray_origin
     ray_time: f64 = random_double()

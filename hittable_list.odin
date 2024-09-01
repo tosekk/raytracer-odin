@@ -12,11 +12,13 @@ HittableList :: struct {
 new_hittable_list :: proc { new_hittable_list_empty, new_hittable_list_object }
 new_hittable_list_empty :: proc() -> (hl: ^HittableList) {
     hl = new(HittableList)
+    hl.type = hl
     return
 }
 
 new_hittable_list_object :: proc(object: ^Hittable) -> (hl: ^HittableList) {
     hl = new(HittableList)
+    hl.type = hl
     hl.bbox = &aabb_empty
     hittable_list_add(hl, object)
     return

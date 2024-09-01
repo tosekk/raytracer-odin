@@ -34,7 +34,7 @@ main :: proc() {
     cam.image_width = 400
     cam.samples_per_pixel = 100
     cam.max_depth = 50
-    
+
     cam.vfov = 20
     cam.lookfrom = Point3{ 13, 2, 3 }
     cam.lookat = Point3{ 0, 0, 0 }
@@ -43,14 +43,14 @@ main :: proc() {
     cam.defocus_angle = 0.6
     cam.focus_dist = 10.0
 
-    image_handle, open_err := os.open(IMAGE_PATH, os.O_CREATE | os.O_RDWR)
+    image_handle, open_err := os.open(IMAGE_PATH, os.O_CREATE | os.O_RDWR, 0o665)
     defer os.close(image_handle)
 
     if open_err != os.ERROR_NONE {
         fmt.panicf("Could not open image_handle at \"%s\": %v", IMAGE_PATH, open_err)
     }
 
-    camera_render(image_handle, &cam, world) 
+    camera_render(image_handle, &cam, world)
 }
 
 three_spheres :: proc(world: ^HittableList) {
@@ -59,8 +59,8 @@ three_spheres :: proc(world: ^HittableList) {
     material_left: ^Dielectric = new_dielectric(1.5)
     material_bubble: ^Dielectric = new_dielectric(1.0 / 1.5)
     material_right: ^Metal = new_metal(Color{ 0.8, 0.6, 0.2 }, 1.0)
-    
-    hittable_list_add(world, new_sphere(Point3{ 1.0, 0, -1.0 }, 0.5, material_right))    
+
+    hittable_list_add(world, new_sphere(Point3{ 1.0, 0, -1.0 }, 0.5, material_right))
     hittable_list_add(world, new_sphere(Point3{ 0, 0, -1.2 }, 0.5, material_center))
     hittable_list_add(world, new_sphere(Point3{ -1.0, 0, -1.0 }, 0.4, material_bubble))
     hittable_list_add(world, new_sphere(Point3{ -1.0, 0, -1.0 }, 0.5, material_left))

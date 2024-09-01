@@ -29,13 +29,18 @@ hittable_hit_multi :: proc(objects: []^Hittable, r: Ray, ray_t: ^Interval, rec: 
     is_hit: bool
 
     for object in objects {
-        #partial switch o in object.type {
+        #partial switch obj in object.type {
             case ^Sphere:
-                if sphere_hit(o, r, Interval{ ray_t.min, closest_so_far }, &temp_rec) {
+                if sphere_hit(obj, r, Interval{ ray_t.min, closest_so_far }, &temp_rec) {
                     is_hit = true
                 }
             case ^BVH:
-                if bvh_hit(o, r, &Interval{ ray_t.min, closest_so_far }, &temp_rec) {
+            	// fmt.println("HITTABLE HIT")
+            	// fmt.println("Object --- ", obj)
+            	// fmt.println("Interval --- ", ray_t.min, closest_so_far)
+            	// fmt.println("Record --- ", temp_rec)
+
+                if bvh_hit(obj, r, &Interval{ ray_t.min, closest_so_far }, &temp_rec) {
                     is_hit = true
                 }
         }
@@ -56,20 +61,22 @@ hittable_hit_single :: proc(object: ^Hittable, r: Ray, ray_t: ^Interval, rec: ^H
     closest_so_far: f64 = ray_t.max
     is_hit: bool
 
-    #partial switch o in object.type {
+    #partial switch obj in object.type {
         case ^Sphere:
-            if sphere_hit(o, r, Interval{ ray_t.min, closest_so_far }, &temp_rec) {
-                is_hit = true
+            if sphere_hit(obj, r, Interval{ ray_t.min, closest_so_far }, &temp_rec) {
+	            is_hit = true
             }
         case ^BVH:
-            if bvh_hit(o, r, &Interval{ ray_t.min, closest_so_far }, &temp_rec) {
-                is_hit = true
+            if bvh_hit(obj, r, &Interval{ ray_t.min, closest_so_far }, &temp_rec) {
+	            is_hit = true
             }
     }
 
-    hit_anything = true
-    closest_so_far = temp_rec.t
-    rec^ = temp_rec
+    if is_hit {
+	   	hit_anything = true
+	    closest_so_far = temp_rec.t
+	    rec^ = temp_rec
+    }
 
     return hit_anything
 }
